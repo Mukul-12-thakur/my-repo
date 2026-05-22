@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>BDB Solar Quotation Generator</title>
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+        <style>
+:root {
+    --pm-orange: #ff9933;
+    --pm-blue: #003366;
+    --pm-green: #28a745;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    background: #eef2f6;
+    color: #242936;
+    padding: 16px;
+}
+
+.page-shell {
+    width: min(100%, 980px);
+    margin: 0 auto;
+}
+
+.quote-container {
+    width: 100%;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.10);
+}
+
+.top-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #ffffff;
+    padding: 20px 14px;
+    border-bottom: 6px solid var(--pm-orange);
+
+    background-image:
+        linear-gradient(rgba(0, 35, 75, 0.72), rgba(0, 35, 75, 0.72)),
+        url("./assets/brands/bg.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.logo {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    border-radius: 50%;
+}
+
+.brand-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    line-height: 1.08;
+}
+
+.brand-name {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: 0;
+}
+
+.brand-subtitle {
+    margin: 3px 0 0;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.section {
+    padding: 22px 40px;
+    border-bottom: 1px solid #edf0f3;
+}
+
+.section-title {
+    display: inline-flex;
+    align-items: center;
+    background: #444;
+    color: #fff;
+    padding: 5px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    font-weight: 800;
+}
+
+.grid-input {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.vendor-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    font-size: 12px;
+    color: #596170;
+    margin-bottom: 6px;
+    font-weight: 700;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1.5px solid #d9dfeb;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    background: #fff;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: var(--pm-blue);
+}
+
+.readonly {
+    background: #f2f4f6;
+}
+
+.component-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.component-card {
+    border: 1px solid #dde2ea;
+    border-radius: 8px;
+    padding: 12px;
+    background: #fff;
+}
+
+.brand-preview {
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3f6f9;
+    border-radius: 6px;
+    margin-top: 10px;
+    overflow: hidden;
+}
+
+.brand-preview img {
+    max-width: 86%;
+    max-height: 38px;
+    object-fit: contain;
+}
+
+.calc-display {
+    background: #f8f9fa;
+    border: 1px solid #e3e7ec;
+    border-radius: 10px;
+    padding: 18px;
+    margin-top: 20px;
+}
+
+.calc-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #dde2e7;
+    font-size: 16px;
+}
+
+.calc-row:last-child {
+    border-bottom: 0;
+}
+
+.calc-row span:last-child {
+    text-align: right;
+    white-space: nowrap;
+    font-weight: 800;
+}
+
+.minus {
+    color: #d9534f;
+}
+
+.total-box {
+    background: #e8f5e9;
+    border: 2px solid var(--pm-green);
+    padding: 24px;
+    border-radius: 12px;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.total-label {
+    font-weight: 900;
+    color: #2e7d32;
+    text-transform: uppercase;
+}
+
+.total-amount {
+    font-size: 40px;
+    font-weight: 900;
+    color: #1b5e20;
+    margin: 8px 0;
+}
+
+.note {
+    font-size: 11px;
+    color: #626b78;
+    margin: 0;
+}
+
+.btn-group {
+    display: flex;
+    justify-content: center;
+    padding: 26px 0 10px;
+}
+
+.btn {
+    padding: 15px 34px;
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 900;
+    font-size: 16px;
+    background: var(--pm-blue);
+    color: #fff;
+}
+
+.btn:hover {
+    background: #002244;
+}
+
+@media (max-width: 840px) {
+    .section { padding: 18px; }
+    .component-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+    body { padding: 10px; }
+    .brand-name { font-size: 20px; }
+
+    .grid-input,
+    .vendor-grid,
+    .component-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .calc-row {
+        font-size: 14px;
+        align-items: flex-start;
+    }
+
+    .total-amount { font-size: 30px; }
+
+    .btn {
+        width: 100%;
+        margin: 0 4px;
+    }
+}
+</style>
+    </head>
+
+    <body>
+        <main class="page-shell">
+            <div class="quote-container">
+                <div class="top-banner">
+                    <img class="logo"
+                        src="./assets/brands/bdb-logo-transparent.png"
+                        alt="BDB Solar Logo">
+                    <div class="brand-stack">
+                        <p class="brand-name">BDB SOLAR</p>
+                        <p class="brand-subtitle">BDB Ventures Pvt Ltd</p>
+                    </div>
+                </div>
+
+                <section class="section">
+                    <span class="section-title">Customer Information</span>
+                    <div class="grid-input">
+                        <div class="form-group">
+                            <label>Customer Name</label>
+                            <input type="text" id="custName" value="Name">
+                        </div>
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="text" id="autoDate" class="readonly"
+                                readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Number</label>
+                            <input type="text" id="custPhone"
+                                value="1234567890">
+                        </div>
+                        <div class="form-group">
+                            <label>Installation Address</label>
+                            <textarea id="custAddress"
+                                rows="2">Faridabad, Haryana</textarea>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="section">
+                    <span class="section-title"
+                        style="background: var(--pm-green);">System &
+                        Pricing</span>
+                    <div class="grid-input">
+                        <div class="form-group">
+                            <label>System Capacity</label>
+                            <select id="kwSelect" onchange="autoFillData()">
+                                <option value="1">1 kW</option>
+                                <option value="2">2 kW</option>
+                                <option value="3" selected>3 kW</option>
+                                <option value="4">4 kW</option>
+                                <option value="5">5 kW</option>
+                                <option value="6">6 kW</option>
+                                <option value="8">8 kW</option>
+                                <option value="10">10 kW</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Panel Watt</label>
+                            <select id="panelWatt">
+                                <option value="550" selected>550W</option>
+                                <option value="575">575W</option>
+                                <option value="600">600W</option>
+                                <option value="650">650W</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Market Rate</label>
+                            <input type="number" id="marketInput"
+                                oninput="calculateFinal()">
+                        </div>
+                        <div class="form-group">
+                            <label>Company Discount</label>
+                            <input type="number" id="discInput"
+                                oninput="calculateFinal()">
+                        </div>
+                        <div class="form-group">
+                            <label>Govt. Subsidy</label>
+                            <input type="number" id="subsidyInput"
+                                class="readonly" readonly>
+                        </div>
+                    </div>
+
+                    <div class="calc-display">
+                        <div class="calc-row"><span>Basic Market
+                                Price:</span><span id="txtMarket">Rs.
+                                0</span></div>
+                        <div class="calc-row"><span>Discount:</span><span
+                                class="minus" id="txtDisc">- Rs. 0</span></div>
+                        <div class="calc-row"
+                            style="font-weight:800;color:var(--pm-blue);"><span>Consumer
+                                Total Price </span><span id="txtConsumer">Rs.
+                                0</span></div>
+                        <div class="calc-row"><span>PM Surya Ghar
+                                Subsidy:</span><span class="minus"
+                                id="txtSubsidy">- Rs. 0</span></div>
+                    </div>
+
+                    <div class="total-box">
+                        <div class="total-label">Net Payable Amount</div>
+                        <div class="total-amount" id="txtFinal">Rs. 0</div>
+                        <p class="note">Verified as per PM Surya Ghar Muft Bijli
+                            Yojna </p>
+                    </div>
+                </section>
+
+                <section class="section">
+                    <span class="section-title"
+                        style="background: var(--pm-blue);">Solar
+                        Components</span>
+                    <div class="component-grid">
+                        <div class="component-card">
+                            <label>Panel Brand</label>
+                            <select id="panelBrand"
+                                onchange="updateBrandPreviews()">
+                                <option value="oswal">Oswal Solar
+                                    STRUCTURE</option>
+                                <option value="adani">Adani Solar</option>
+                                <option value="premier">Premier Solar</option>
+                                <option value="ibsolar">IB Solar</option>
+                            </select>
+                            <div class="brand-preview"><img
+                                    id="panelBrandPreview"></div>
+                        </div>
+
+                        <div class="component-card">
+                            <label>Inverter Brand</label>
+                            <select id="inverterBrand"
+                                onchange="updateBrandPreviews()">
+                                <option value="havells">Havells Solar</option>
+                                <option value="oswal">Oswal Solar</option>
+                                <option value="deye">Deye Solar</option>
+                                <option value="servotec">Servotec Solar</option>
+                                <option value="luminous">Luminous Solar</option>
+                                <option value="eastman">Eastman Solar</option>
+                            </select>
+                            <div class="brand-preview"><img
+                                    id="inverterBrandPreview"></div>
+                        </div>
+
+                        <div class="component-card">
+                            <label>Cable Brand</label>
+                            <select id="cableBrand"
+                                onchange="updateBrandPreviews()">
+                                <option value="havells">Havells</option>
+                                <option value="polycab">Polycab</option>
+                            </select>
+                            <div class="brand-preview"><img
+                                    id="cableBrandPreview"></div>
+                        </div>
+
+                        <div class="component-card">
+                            <label>Electrical Brand</label>
+                            <select id="electricalBrand"
+                                onchange="updateBrandPreviews()">
+                                <option value="havells">Havells</option>
+                                <option value="polycab">Polycab</option>
+                                <option value="sibass">Sibass</option>
+                            </select>
+                            <div class="brand-preview"><img
+                                    id="electricalBrandPreview"></div>
+                        </div>
+
+                        <div class="component-card">
+                            <label>Structure Brand</label>
+                            <select id="structureBrand"
+                                onchange="updateBrandPreviews()">
+
+                                <option value="oswal">Oswal Solar</option>
+                            </select>
+                            <div class="brand-preview"><img
+                                    id="structureBrandPreview"></div>
+                        </div>
+
+                        <div class="component-card">
+                            <label>Service Provider</label>
+                            <select id="serviceBrand"
+                                onchange="updateBrandPreviews()">
+                                <option value="bdb">BDB Ventures
+                                    Pvt.Ltd.</option>
+                            </select>
+                            <div class="brand-preview"><img
+                                    id="serviceBrandPreview"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="section">
+                    <span class="section-title"
+                        style="background: var(--pm-blue);">Authorized
+                        Vendor</span>
+                    <div class="grid-input vendor-grid">
+                        <div class="form-group"><label>Vendor</label><input
+                                class="readonly" type="text"
+                                value="BDB Ventures Pvt. Ltd" readonly></div>
+                        <div class="form-group"><label>Website</label><input
+                                class="readonly" type="text"
+                                value="www.bdbvpl.com" readonly></div>
+                        <div class="form-group"><label>Email</label><input
+                                class="readonly" type="text"
+                                value="contactbdbvpl@gmail.com" readonly></div>
+                        <div class="form-group">
+                            <label>Address</label>
+                            <textarea id="vendorAddress" class="readonly"
+                                rows="2"
+                                readonly>Seekri,Ballabgarh Faridabad, Haryana 121004</textarea>
+                        </div>
+
+                    </div>
+                </section>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn" type="button"
+                    onclick="generatePDF()">Download Quotation PDF</button>
+            </div>
+        </main>
+
+        <script>
+const priceTable = {
+    "1": { m: 80000, d: 5000, s: 30000 },
+    "2": { m: 150000, d: 10000, s: 60000 },
+    "3": { m: 210000, d: 20000, s: 78000 },
+    "4": { m: 280000, d: 40000, s: 78000 },
+    "5": { m: 340000, d: 50000, s: 78000 },
+    "6": { m: 420000, d: 60000, s: 78000 },
+    "8": { m: 550000, d: 80000, s: 78000 },
+    "10": { m: 600000, d: 100000, s: 78000 }
+};
+
+const brandData = {
+    oswal: { name: "Oswal Solar", logo: "./assets/brands/oswal.png" },
+    premier: { name: "Premier Solar", logo: "./assets/brands/premier.png" },
+    ibsolar: { name: "IB Solar", logo: "./assets/brands/ib.png" },
+     deye: { name: "Deye", logo: "./assets/brands/deye.png" },
+     servotec: { name: "Servotec", logo: "./assets/brands/servotec.png" },
+     luminous: { name: "Luminous", logo: "./assets/brands/luminous.png" },
+     eastman:{ name:"Eastman", logo:"./assets/brands/eastman.png"},
+      sibass:{ name:"Sibass", logo:"./assets/brands/sibass.png"},
+    adani: { name: "Adani Solar", logo: "./assets/brands/adani.png" },
+    havells: { name: "Havells", logo: "./assets/brands/havells.png" },
+    polycab: { name: "Polycab", logo: "./assets/brands/polycab.png" },
+    tataSteel: { name: "Tata Steel", logo: "./assets/brands/tata-steel.png" },
+    bdb: { name: "BDB Ventures", logo: "./assets/brands/bdb-logo-transparent.png" }
+};
+
+// ===============================
+// DYNAMIC SOLAR SYSTEM SPECS
+// ===============================
+
+function getSolarSpecs() {
+
+    const kw = parseFloat(getValue("kwSelect"));
+
+    // Panel wattage
+    const panelWatt = 550;
+
+    // Total panels auto calculate
+    const totalPanels =
+        Math.ceil((kw * 1000) / panelWatt);
+
+    // Inverter logic
+    let inverterQty = 1;
+    let inverterKW = kw;
+
+    // 10kW+ systems
+    if (kw >= 10) {
+        inverterQty = 2;
+        inverterKW = 5;
+    }
+
+    return {
+        panelWatt,
+        totalPanels,
+        inverterQty,
+        inverterKW
+    };
+}
+
+function getValue(id) {
+    return document.getElementById(id).value || "";
+}
+
+function money(value) {
+    return "Rs. " + Number(value || 0).toLocaleString("en-IN");
+}
+
+function setDate() {
+    const today = new Date();
+    document.getElementById("autoDate").value = today.toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+    });
+}
+
+function autoFillData() {
+    const kw = document.getElementById("kwSelect").value;
+    const data = priceTable[kw];
+
+    document.getElementById("marketInput").value = data.m;
+    document.getElementById("discInput").value = data.d;
+    document.getElementById("subsidyInput").value = data.s;
+
+    calculateFinal();
+}
+
+function calculateFinal() {
+    const market = parseFloat(document.getElementById("marketInput").value) || 0;
+    const discount = parseFloat(document.getElementById("discInput").value) || 0;
+    const subsidy = parseFloat(document.getElementById("subsidyInput").value) || 0;
+
+    const consumerPrice = market - discount;
+    const finalPayable = consumerPrice - subsidy;
+
+    document.getElementById("txtMarket").innerText = money(market);
+    document.getElementById("txtDisc").innerText = "- " + money(discount);
+    document.getElementById("txtConsumer").innerText = money(consumerPrice);
+    document.getElementById("txtSubsidy").innerText = "- " + money(subsidy);
+    document.getElementById("txtFinal").innerText = money(finalPayable < 0 ? 0 : finalPayable);
+}
+
+function updateBrandPreviews() {
+    const previewMap = {
+        panelBrand: "panelBrandPreview",
+        inverterBrand: "inverterBrandPreview",
+        cableBrand: "cableBrandPreview",
+        electricalBrand: "electricalBrandPreview",
+        structureBrand: "structureBrandPreview",
+        serviceBrand: "serviceBrandPreview"
+    };
+
+    Object.keys(previewMap).forEach(selectId => {
+        const brand = brandData[getValue(selectId)];
+        const img = document.getElementById(previewMap[selectId]);
+        img.src = brand.logo;
+        img.alt = brand.name;
+    });
+}
+
+function loadImage(src) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+    });
+}
+
+async function addHeader(pdf, title) {
+
+    try {
+
+        // Background image load
+        const bg = await loadImage("./assets/brands/bg.jpg");
+
+        // Background image
+        pdf.addImage(bg, "JPEG", 10, 10, 190, 20);
+
+    } catch (err) {
+
+        // Agar image load na ho to normal color
+        pdf.setFillColor(0, 51, 102);
+        pdf.rect(10, 10, 190, 20, "F");
+    }
+
+    // Dark overlay
+    pdf.setFillColor(0, 35, 75);
+    pdf.setGState(new pdf.GState({ opacity: 0.55 }));
+    pdf.rect(10, 10, 190, 20, "F");
+
+    // Reset opacity
+    pdf.setGState(new pdf.GState({ opacity: 1 }));
+
+    // Orange line
+    pdf.setFillColor(255, 153, 51);
+    pdf.rect(10, 30, 190, 2.2, "F");
+
+    // Title
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(17);
+    pdf.text(title, 105, 22, { align: "center" });
+}
+
+function addSectionLabel(pdf, text, x, y, width, color) {
+    pdf.setFillColor(color[0], color[1], color[2]);
+    pdf.roundedRect(x, y, width, 8, 1.5, 1.5, "F");
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(9);
+    pdf.text(text, x + 3, y + 5.4);
+}
+
+function addWrappedText(pdf, text, x, y, width, lineHeight) {
+    const lines = pdf.splitTextToSize(text, width);
+    pdf.text(lines, x, y);
+    return y + lines.length * lineHeight;
+}
+
+async function drawBrandLogo(pdf, brand, x, y, w, h) {
+    try {
+        const image = await loadImage(brand.logo);
+        pdf.addImage(image, "PNG", x, y, w, h, undefined, "FAST");
+    } catch (error) {
+        pdf.setTextColor(20, 30, 50);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(8);
+        pdf.text(brand.name, x + w / 2, y + h / 2, { align: "center" });
+    }
+}
+
+async function addComponentsPage(pdf) {
+    pdf.addPage();
+    const specs = getSolarSpecs();
+    const systemKW = parseInt(
+    document.getElementById("kwSelect").value
+);
+
+const panelWatt = parseInt(
+    document.getElementById("panelWatt").value
+);
+
+const totalPanels = Math.ceil(
+    (systemKW * 1000) / panelWatt
+);
+
+
+    // ✅ INVERTER TYPE DETECT KARO
+    const inverterBrand = getValue("inverterBrand");
+    let inverterWarranty = "10 years"; // Default
+    let inverterType = "On-Grid";
+
+    // Agar Hybrid types ho to warranty 10 years
+    if (inverterBrand === "deye" || inverterBrand === "luminous" || inverterBrand === "eastman") {
+        inverterWarranty = "5 years";
+        inverterType = "Hybrid";
+    }
+
+
+    pdf.setTextColor(13, 24, 56);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(24);
+    pdf.text("SOLAR COMPONENTS", 10, 18);
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(10.5);
+    pdf.text("High-quality", 10, 27);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(" components from trusted ", 33, 27);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Tier-1 OEMs", 84, 27);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(", selected for performance, safety, and long-term ROI.", 109, 27);
+    const components = [
+        {
+           
+    title: "PANEL",
+    brand: brandData[getValue("panelBrand")],
+
+    specs: [
+       `Type: Bifacial (${totalPanels} panels)`,
+
+          `Capacity: ${panelWatt}W`,
+        "Warranty: 12/27 yrs"
+    ],
+
+    desc:
+    "Modules offering high efficiency with backside generation and long performance life."
+
+        },
+        
+       {
+        title: "INVERTER",
+        brand: brandData[getValue("inverterBrand")],
+
+        specs: [
+        `Type: ${inverterType} (${specs.inverterQty} inverter)`,
+
+        `Capacity: ${specs.inverterKW} kW`,
+
+        `Warranty: ${inverterWarranty}`  // ✅ DYNAMIC WARRANTY
+    ],
+
+    desc:
+    "Smart inverter featuring high conversion efficiency, Wi-Fi monitoring, and advanced protection systems."
+        },
+
+        {
+        title: "CABLE",
+        brand: brandData[getValue("cableBrand")],
+        specs: ["Type: DC/AC solar cables", "Warranty: 2 years"],
+        desc: "Premium solar-grade cables for low-loss power transmission and UV resistance."
+        },
+        {
+        title: "ELECTRICAL",
+        brand: brandData[getValue("electricalBrand")],
+        specs: ["Includes: MC4 connector", "Standard: Electro coper coated, LA-25"],
+        desc: "ACDB, DCDB, MC4 connectors, earthing kit, and lightning arrester ensuring robust stability."
+        },
+        {
+        title: "STRUCTURE",
+        brand: brandData[getValue("structureBrand")],
+        specs: ["Warranty: 25 years", "Weight: 40 kg/kW", "Standard: HDGI"],
+        desc: "Hot-dip galvanized mounting structure with corrosion resistance, engineered for optimal panel orientation."
+        },
+        {
+        title: "SERVICES",
+        brand: brandData[getValue("serviceBrand")],
+        specs: ["End-to-end installation", "Support: 5 Years AMC", "Ongoing monitoring"],
+        desc: "Professional installation with comprehensive after-sales support."
+        }
+    ];
+
+    let y = 35;
+    const rowHeight = 38;
+
+    pdf.setFillColor(25, 25, 25);
+    pdf.rect(10, y, 190, 9, "F");
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(8.5);
+    pdf.text("SPECIFICATIONS", 37, y + 6, { align: "center" });
+    pdf.text("BRAND", 105, y + 6, { align: "center" });
+    pdf.text("DESCRIPTION", 166, y + 6, { align: "center" });
+
+    y += 9;
+
+    for (const item of components) {
+        pdf.setDrawColor(216, 216, 216);
+        pdf.setFillColor(255, 255, 255);
+        pdf.rect(10, y, 190, rowHeight, "FD");
+        pdf.line(73, y, 73, y + rowHeight);
+        pdf.line(133, y, 133, y + rowHeight);
+
+        pdf.setFillColor(239, 240, 241);
+        pdf.rect(10, y, 190, 9, "F");
+        pdf.setFillColor(0, 137, 123);
+        pdf.rect(10, y, 1.6, 9, "F");
+
+        pdf.setTextColor(12, 26, 52);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(10);
+        pdf.text(item.title, 15, y + 6.2);
+
+        pdf.setTextColor(0, 0, 0);
+        pdf.setFontSize(8);
+        let specY = y + 16;
+
+        item.specs.forEach(spec => {
+            const parts = spec.split(":");
+            pdf.setFont("helvetica", "bold");
+            pdf.text(parts[0] + ":", 13, specY);
+            pdf.setFont("helvetica", "normal");
+            pdf.text(parts.slice(1).join(":").trim(), 30, specY);
+            specY += 5;
+        });
+
+        await drawBrandLogo(pdf, item.brand, 88, y + 12, 28, 13);
+
+        pdf.setTextColor(0, 0, 0);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(7.8);
+        pdf.text(item.brand.name, 103, y + 32, { align: "center" });
+
+        pdf.setFontSize(8);
+        addWrappedText(pdf, item.desc, 137, y + 17, 55, 4.2);
+
+        y += rowHeight;
+    }
+}
+
+async function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF("p", "mm", "a4");
+
+    const customerName = getValue("custName").trim() || "Quotation";
+    const phone = getValue("custPhone");
+    const address = getValue("custAddress");
+    const vendorAddress = getValue("vendorAddress");
+    const date = getValue("autoDate");
+    const kw = getValue("kwSelect");
+
+    const market = parseFloat(getValue("marketInput")) || 0;
+    const discount = parseFloat(getValue("discInput")) || 0;
+    const subsidy = parseFloat(getValue("subsidyInput")) || 0;
+    const consumerPrice = market - discount;
+    const finalPayable = consumerPrice - subsidy;
+    const payableForPdf = finalPayable < 0 ? 0 : finalPayable;
+
+     await addHeader(pdf, "BDB Ventures Pvt Ltd");
+
+      pdf.setTextColor(255, 255, 255);
+
+       pdf.setFont("helvetica", "bold");
+
+         pdf.setFontSize(11);
+
+        pdf.text("QUOTATION", 105, 28, {
+          align: "center"
+        });
+
+    try {
+        const logo = await loadImage(brandData.bdb.logo);
+        pdf.addImage(logo, "PNG", 16, 11.5, 15, 15, undefined, "FAST");
+    } catch (error) {}
+
+    let y = 42;
+    addSectionLabel(pdf, "CUSTOMER INFORMATION", 10, y, 57, [68, 68, 68]);
+    y += 16;
+
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFontSize(10.5);
+    pdf.setFont("helvetica", "normal");
+    pdf.text("Customer Name:", 12, y);
+    pdf.setFont("helvetica", "bold");
+    pdf.text(customerName, 49, y);
+
+    pdf.setFont("helvetica", "normal");
+    pdf.text("Date:", 130, y);
+    pdf.setFont("helvetica", "bold");
+    pdf.text(date, 144, y);
+    y += 9;
+
+    pdf.setFont("helvetica", "normal");
+    pdf.text("Contact Number:", 12, y);
+    pdf.setFont("helvetica", "bold");
+    pdf.text(phone, 49, y);
+    y += 9;
+
+    pdf.setFont("helvetica", "normal");
+    pdf.text("Installation Address:", 12, y);
+    pdf.setFont("helvetica", "bold");
+    const addressLines = pdf.splitTextToSize(address, 132);
+    pdf.text(addressLines, 55, y);
+    y += Math.max(13, addressLines.length * 5 + 6);
+
+    addSectionLabel(pdf, "System & Pricing", 10, y, 45, [40, 167, 69]);
+    y += 16;
+
+    pdf.setDrawColor(225, 229, 235);
+    pdf.setFillColor(248, 249, 250);
+    pdf.roundedRect(10, y, 190, 67, 3, 3, "FD");
+    y += 11;
+
+    function row(label, value, color, bold) {
+        pdf.setFont("helvetica", bold ? "bold" : "normal");
+        pdf.setTextColor(0, 0, 0);
+        pdf.setFontSize(11);
+        pdf.text(label, 18, y);
+
+        pdf.setTextColor(color[0], color[1], color[2]);
+        pdf.setFont("helvetica", "bold");
+        pdf.text(value, 190, y, { align: "right" });
+        y += 11;
+    }
+
+    row("System Capacity:", kw + " kW", [0, 51, 102], true);
+    row("Basic Market Price:", money(market), [0, 0, 0], false);
+    row("Discount:", "- " + money(discount), [217, 83, 79], false);
+    row("Consumer Total Price:", money(consumerPrice), [0, 51, 102], true);
+    row("PM Surya Ghar Subsidy:", "- " + money(subsidy), [217, 83, 79], false);
+
+    y += 7;
+
+    pdf.setDrawColor(40, 167, 69);
+    pdf.setFillColor(232, 245, 233);
+    pdf.roundedRect(10, y, 190, 36, 4, 4, "FD");
+
+    pdf.setTextColor(46, 125, 50);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(12);
+    pdf.text("NET PAYABLE AMOUNT", 105, y + 10, { align: "center" });
+
+    pdf.setTextColor(27, 94, 32);
+    pdf.setFontSize(25);
+    pdf.text(money(payableForPdf), 105, y + 26, { align: "center" });
+
+    y += 50;
+
+     // ✅ VENDOR + BANK DETAILS SIDE BY SIDE
+    addSectionLabel(pdf, "Authorized Vendor", 10, y, 48, [0, 51, 102]);
+    addSectionLabel(pdf, "Bank Details", 108, y, 35, [0, 51, 102]);
+    y += 17;
+
+    // LEFT SIDE - VENDOR INFO
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFontSize(9.5);
+    pdf.setFont("helvetica", "normal");
+    
+    pdf.text("Vendor:", 12, y);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("BDB Ventures Pvt Ltd", 34, y);
+    y += 7;
+
+    pdf.setFont("helvetica", "normal");
+    pdf.text("Website:", 12, y);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("www.bdbvpl.com", 34, y);
+    y += 7;
+
+    pdf.setFont("helvetica", "normal");
+    pdf.text("Email:", 12, y);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("contactbdbvpl@gmail.com", 34, y);
+    y += 7;
+    
+    pdf.setFont("helvetica", "normal");
+    pdf.text("Address:", 12, y);
+    pdf.setFont("helvetica", "bold");
+    const vendorAddressLines = pdf.splitTextToSize("Seekri,Ballabgarh Faridabad, Haryana 121004", 55);
+    pdf.text(vendorAddressLines, 34, y);
+
+    // ✅ RIGHT SIDE - BANK DETAILS
+    let bankY = y - 21;
+    
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFontSize(9.5);
+    pdf.setFont("helvetica", "normal");
+    
+    pdf.text("Bank Name:", 112, bankY);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("UNION BANK OF INDIA", 145, bankY);
+    bankY += 7;
+
+    pdf.setFont("helvetica", "normal");
+    pdf.text("Beneficiary Name:", 112, bankY);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("BDB Ventures Pvt.Ltd", 145, bankY);
+    bankY += 7;
+
+    pdf.setFont("helvetica", "normal");
+    pdf.text("Account Number:", 112, bankY);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("412105010130129", 145, bankY);
+    bankY += 7;
+
+    pdf.setFont("helvetica", "normal");
+    pdf.text("IFSC Code:", 112, bankY);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("UBIN0541214", 145, bankY);
+
+    pdf.setTextColor(100, 100, 100); 
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(9);
+    pdf.text("Verified as per PM Surya Ghar Muft Bijli Yojna", 105, 282, { align: "center" });
+
+    await addComponentsPage(pdf);
+
+    const safeName = customerName.replace(/[\\/:*?"<>|]/g, "_");
+    pdf.save("Solar_Quote_" + safeName + ".pdf");
+}
+
+window.onload = function() {
+    setDate();
+    autoFillData();
+    updateBrandPreviews();
+};
+</script>
+    </body>
+</html>
